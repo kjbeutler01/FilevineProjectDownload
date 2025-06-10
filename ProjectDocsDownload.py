@@ -35,6 +35,9 @@ import sys
 import time
 from typing import Dict, List, Optional
 
+import tkinter as tk
+from tkinter import filedialog, simpledialog
+
 import requests
 from dotenv import load_dotenv
 
@@ -203,12 +206,36 @@ def download_document(
 def main() -> None:
     load_dotenv()
 
-    parser = argparse.ArgumentParser(description="Download Filevine project documents.")
-    parser.add_argument("--project", type=int, required=True, help="Filevine projectId")
-    parser.add_argument("--dest", default="./downloads", help="Destination directory")
+    parser = argparse.ArgumentParser(
+        description="Download Filevine project documents."
+    )
+    parser.add_argument("--project", type=int, help="Filevine projectId")
+    parser.add_argument("--dest", help="Destination directory")
     parser.add_argument("--workers", type=int, default=4, help="Concurrent download workers")
     parser.add_argument("--dry-run", action="store_true", help="List docs without downloading")
     args = parser.parse_args()
+
+    if args.project is None or args.dest is None:
+        root = tk.Tk()
+        root.withdraw()
+        if args.project is None:
+            pid = simpledialog.askstring(
+                "Project ID", "Enter the Filevine project ID:", parent=root
+            )
+            if pid is None:
+                sys.exit("Project ID is required")
+            try:
+                args.project = int(pid)
+            except ValueError:
+                sys.exit("Project ID must be an integer")
+        if args.dest is None:
+            path = filedialog.askdirectory(
+                title="Select download destination", parent=root
+            )
+            if not path:
+                sys.exit("Destination directory is required")
+            args.dest = path
+        root.destroy()
 
     pat = os.getenv("FILEVINE_PAT")
     cid = os.getenv("FILEVINE_CLIENT_ID")
