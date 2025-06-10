@@ -8,7 +8,13 @@ This repository contains example scripts that interact with the [Filevine](https
    ```bash
    pip install requests python-dotenv
    ```
-2. Create a `.env` file in this directory with the following values:
+2. Generate a `.env` file containing your credentials:
+   ```bash
+   python create_env.py
+   ```
+   The script prompts for your Personal Access Token, Client ID and Client Secret
+   and writes them to `.env` in this folder. Alternatively you can create the file
+   manually with the following values:
    ```
    FILEVINE_PAT=your_personal_access_token
    FILEVINE_CLIENT_ID=your_client_id
