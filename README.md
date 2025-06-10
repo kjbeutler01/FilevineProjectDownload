@@ -1,6 +1,6 @@
 # FilevineProjectDownload
 
-This repository contains example scripts that interact with the [Filevine](https://www.filevine.com/) API. The main script `ProjectDocsDownload.py` downloads every document from a Filevine project and recreates the same folder hierarchy on your local drive. A second script, `TestConnection.py`, verifies that your credentials work by retrieving your organization and user IDs.
+This repository contains example scripts that interact with the [Filevine](https://www.filevine.com/) API. The main script `ProjectDocsDownload.py` downloads every document from a Filevine project and recreates the same folder hierarchy on your local drive.
 
 ## Setup
 
@@ -34,11 +34,6 @@ python ProjectDocsDownload.py --project <projectId> --dest ./downloads --workers
 - `--workers`  – Number of concurrent download workers (default: 4).
 - `--dry-run`  – Show which files would be downloaded without saving anything.
 
-**Test your credentials**
-```bash
-python TestConnection.py
-```
-This script exchanges your PAT for an access token and prints the detected organization and user IDs.
 
 ## License
 
