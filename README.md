@@ -27,12 +27,18 @@ These environment variables are required for authenticating with the Filevine AP
 
 **Download project documents**
 ```bash
+python ProjectDocsDownload.py
+```
+Running the script without flags opens small prompts asking for the project ID
+and the folder where you want the files saved. You can still pass the values on
+the command line if you prefer:
+```bash
 python ProjectDocsDownload.py --project <projectId> --dest ./downloads --workers 4
 ```
-If `--project` or `--dest` are omitted, a small window will prompt for the
-project ID and let you choose the destination directory.
-- `--project`  – ID of the Filevine project to download from.
-- `--dest`     – Local directory where documents will be written.
+- `--project`  – ID of the Filevine project to download from. Optional if you
+  supply it via the prompt.
+- `--dest`     – Local directory where documents will be written. Optional if
+  chosen via the prompt.
 - `--workers`  – Number of concurrent download workers (default: 4).
 - `--dry-run`  – Show which files would be downloaded without saving anything.
 
