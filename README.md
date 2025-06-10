@@ -41,6 +41,7 @@ python ProjectDocsDownload.py --project <projectId> --dest ./downloads --workers
   chosen via the interactive prompt.
 - `--workers`  – Number of concurrent download workers (default: 4).
 - `--dry-run`  – Show which files would be downloaded without saving anything.
+- `--log`      – Path to a log file capturing the export process (default: `download_log.txt`).
 
 
 ## License

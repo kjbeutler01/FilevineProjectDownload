@@ -29,6 +29,7 @@ Options
 """
 import argparse
 import concurrent.futures
+import logging
 import os
 import pathlib
 import sys
@@ -38,6 +39,25 @@ from typing import Dict, List, Optional
 
 import requests
 from dotenv import load_dotenv
+
+# -----------------------------------------------------------------------------
+# Logging setup
+# -----------------------------------------------------------------------------
+logger = logging.getLogger("filevine_export")
+
+
+def setup_logging(log_file: str) -> None:
+    """Configure logging to file and console."""
+    logger.setLevel(logging.INFO)
+    formatter = logging.Formatter("%(asctime)s %(message)s")
+
+    fh = logging.FileHandler(log_file, encoding="utf-8")
+    fh.setFormatter(formatter)
+    logger.addHandler(fh)
+
+    sh = logging.StreamHandler()
+    sh.setFormatter(logging.Formatter("%(message)s"))
+    logger.addHandler(sh)
 
 # -----------------------------------------------------------------------------
 # API helpers
@@ -173,7 +193,7 @@ def download_document(
     dest_path.parent.mkdir(parents=True, exist_ok=True)
 
     if dry_run:
-        print(f"[DRY‑RUN] Would download {doc_id} → {dest_path}")
+        logger.info(f"[DRY‑RUN] Would download {doc_id} → {dest_path}")
         return
 
     for attempt in range(1, max_retries + 1):
@@ -186,15 +206,15 @@ def download_document(
                     for chunk in r.iter_content(chunk_size=8192):
                         if chunk:
                             fh.write(chunk)
-            print(f"✅ {dest_path} ({doc_id})")
+            logger.info(f"✅ {dest_path} ({doc_id})")
             return
         except Exception as e:
             if attempt < max_retries:
                 wait = 2 ** attempt
-                print(f"⚠️  Retry {attempt}/{max_retries} for {doc_id} in {wait}s: {e}")
+                logger.warning(f"⚠️  Retry {attempt}/{max_retries} for {doc_id} in {wait}s: {e}")
                 time.sleep(wait)
             else:
-                print(f"❌ Failed to download {doc_id} after {max_retries} attempts: {e}")
+                logger.error(f"❌ Failed to download {doc_id} after {max_retries} attempts: {e}")
 
 
 # -----------------------------------------------------------------------------
@@ -211,7 +231,10 @@ def main() -> None:
     parser.add_argument("--dest", help="Destination directory")
     parser.add_argument("--workers", type=int, default=4, help="Concurrent download workers")
     parser.add_argument("--dry-run", action="store_true", help="List docs without downloading")
+    parser.add_argument("--log", default="download_log.txt", help="Path to write log file")
     args = parser.parse_args()
+
+    setup_logging(args.log)
 
     if args.project is None:
         pid = input("Enter the Filevine project ID: ").strip()
@@ -234,7 +257,7 @@ def main() -> None:
     if not all([pat, cid, secret]):
         sys.exit("Please provide FILEVINE_PAT, FILEVINE_CLIENT_ID, FILEVINE_CLIENT_SECRET in .env")
 
-    print("🔑 Exchanging PAT for access token…")
+    logger.info("🔑 Exchanging PAT for access token…")
     access_token = get_access_token(pat, cid, secret)
     ids = get_org_and_user_ids(access_token)
     headers = {
@@ -244,28 +267,28 @@ def main() -> None:
         "Accept": "application/json",
     }
 
-    print("📂 Fetching folder structure…")
+    logger.info("📂 Fetching folder structure…")
     folders = fetch_folder_tree(args.project, headers)
     folder_map = build_folder_maps(folders)
-    print(f"   {len(folder_map)} folders found.")
+    logger.info(f"   {len(folder_map)} folders found.")
 
     base_dir = pathlib.Path(args.dest)
     base_dir.mkdir(parents=True, exist_ok=True)
 
     # NEW: mirror the folder tree even for empty folders
-    print("🗂️  Mirroring empty folders locally…")
+    logger.info("🗂️  Mirroring empty folders locally…")
     for fid in folder_map:
         (base_dir / folder_path(fid, folder_map)).mkdir(parents=True, exist_ok=True)
 
-    print("📑 Fetching document list…")
+    logger.info("📑 Fetching document list…")
     documents = list_documents(args.project, headers)
-    print(f"   {len(documents)} documents found.")
+    logger.info(f"   {len(documents)} documents found.")
 
     if args.dry_run:
-        print("⛔ Dry‑run complete. No files downloaded.")
+        logger.info("⛔ Dry‑run complete. No files downloaded.")
         return
 
-    print("⬇️  Starting downloads…")
+    logger.info("⬇️  Starting downloads…")
     with concurrent.futures.ThreadPoolExecutor(max_workers=args.workers) as pool:
         futures = [
             pool.submit(
@@ -281,7 +304,7 @@ def main() -> None:
         for f in concurrent.futures.as_completed(futures):
             _ = f.result()  # propagate exceptions
 
-    print("\n🎉 Done.")
+    logger.info("\n🎉 Done.")
 
 
 if __name__ == "__main__":
