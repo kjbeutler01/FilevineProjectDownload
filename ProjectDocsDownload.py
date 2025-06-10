@@ -35,8 +35,6 @@ import sys
 import time
 from typing import Dict, List, Optional
 
-import tkinter as tk
-from tkinter import filedialog, simpledialog
 
 import requests
 from dotenv import load_dotenv
@@ -215,27 +213,20 @@ def main() -> None:
     parser.add_argument("--dry-run", action="store_true", help="List docs without downloading")
     args = parser.parse_args()
 
-    if args.project is None or args.dest is None:
-        root = tk.Tk()
-        root.withdraw()
-        if args.project is None:
-            pid = simpledialog.askstring(
-                "Project ID", "Enter the Filevine project ID:", parent=root
-            )
-            if pid is None:
-                sys.exit("Project ID is required")
-            try:
-                args.project = int(pid)
-            except ValueError:
-                sys.exit("Project ID must be an integer")
-        if args.dest is None:
-            path = filedialog.askdirectory(
-                title="Select download destination", parent=root
-            )
-            if not path:
-                sys.exit("Destination directory is required")
-            args.dest = path
-        root.destroy()
+    if args.project is None:
+        pid = input("Enter the Filevine project ID: ").strip()
+        if not pid:
+            sys.exit("Project ID is required")
+        try:
+            args.project = int(pid)
+        except ValueError:
+            sys.exit("Project ID must be an integer")
+
+    if args.dest is None:
+        path = input("Enter the download destination directory: ").strip()
+        if not path:
+            sys.exit("Destination directory is required")
+        args.dest = path
 
     pat = os.getenv("FILEVINE_PAT")
     cid = os.getenv("FILEVINE_CLIENT_ID")
