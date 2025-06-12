@@ -47,3 +47,5 @@ python ProjectDocsDownload.py --project <projectId> --dest ./downloads --workers
 ## License
 
 This project is released under the terms of the GNU General Public License v3. See the [LICENSE](LICENSE) file for details.
+
+Made by Kevin Beutler.
