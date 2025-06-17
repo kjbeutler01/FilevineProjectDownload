@@ -36,6 +36,11 @@ import sys
 import time
 from typing import Dict, List, Optional
 
+try:
+    from tkinter import Tk, filedialog  # type: ignore
+except Exception:
+    filedialog = None  # fall back to CLI prompt if tkinter is unavailable
+
 
 import requests
 from dotenv import load_dotenv
@@ -246,7 +251,13 @@ def main() -> None:
             sys.exit("Project ID must be an integer")
 
     if args.dest is None:
-        path = input("Enter the download destination directory: ").strip()
+        if filedialog is not None:
+            root = Tk()
+            root.withdraw()
+            path = filedialog.askdirectory(title="Select download folder")
+            root.destroy()
+        else:
+            path = input("Enter the download destination directory: ").strip()
         if not path:
             sys.exit("Destination directory is required")
         args.dest = path

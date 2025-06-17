@@ -29,9 +29,10 @@ These environment variables are required for authenticating with the Filevine AP
 ```bash
 python ProjectDocsDownload.py
 ```
-Running the script without flags triggers interactive prompts in your terminal
-to ask for the project ID and destination folder. You can still supply the
-values on the command line if you prefer:
+Running the script without flags triggers interactive prompts. The project ID is
+requested on the command line and, if Tkinter is available, a folder selection
+dialog pops up to choose the destination directory (otherwise you can type the
+path). You can still supply the values on the command line if you prefer:
 ```bash
 python ProjectDocsDownload.py --project <projectId> --dest ./downloads --workers 4
 ```
